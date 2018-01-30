@@ -1,4 +1,4 @@
-
+'''
 
 
 google search results for:
@@ -59,15 +59,12 @@ run google search for topic
 				['Rover.com', 'Background-Checked Cat Sitters']
 			# count the number of times each word appears in the text. 
 			# Different texts can then be compared, based on the keywords they share
-			result1_text = '''
+			result1_text = '
 			Rover.com | Background-Checked Cat Sitters | Rover.com
 https://www.rover.com/cat-sitting/
 Looking for a cat sitter? Book a 5-star cat sitter to feed and play with your cat while you're away or at work.
-'''
+''
 
-
-
-	
 original query (broad term)
 
 get list of all synonymns (narrower terms)
@@ -96,51 +93,118 @@ takes query
 executes enhanced_query
 	instance dependent
 	eg
-	import requests
-	import beautifulsoup4 as BeautifulSoup
-	from textblob import TextBlob
-	#
-	# google search
-	# ----------------------
-	# query formatting
-	query = 'cat sitting'
+'''
+from collections import Counter
+import sys
+import requests
+from requests.exceptions import ConnectionError
+from bs4 import BeautifulSoup
+from textblob import TextBlob
+
+#
+# google search
+# ----------------------
+# query formatting
+def query_format(query):
 	split_q = query.split(' ')
 	formatted_query = '+'.join(split_q) # formatted_query = cat+sitting
 	search_string = 'https://www.google.com/search?q={}'
 	formatted_search_string = search_string.format(formatted_query)
-	# execute search
-	def execute_request(formatted_search_string):
+	return formatted_search_string
+
+def execute_request(formatted_search_string):
+	"""
+	Given search string, execute search
+	:param: formatted_search_string
+	:return: html_dump string
+	"""
+	try:
 		results_thing = requests.get(formatted_search_string)
 		html_dump = results_thing.text
 		return html_dump
+	except ConnectionError:
+		print('Connection timed out :(')
+	except:
+		print("Unexpected error:", sys.exc_info()[0])
+		raise
 
-	html_dump = execute_request(formatted_search_string)
-	
-	# parsed_text <- html_parser(html_dump)
-	def html_parser(html_dump, parser='html.parser'):
-		soup = BeautifulSoup(html_dump, parser)
-		parsed_text = soup.get_text()
-		return parsed_text
 
-	parsed_text = html_parser(html_dump)
-	# tokenizes
-	
-	blob = TextBlob(parsed_text)
-	# returns word_freq_dist_Object
-#**** word_freq_dist = blob.word_counts
-	#--- metrics -----------
-	# TODO: Need ideas for more metrics - ask John
-	# 
-	# extract topics
+# parsed_text <- html_parser(html_dump)
+# try another parser? or api search?
+def html_parser(html_dump, parser='html.parser'):
+	soup = BeautifulSoup(html_dump, parser)
+	parsed_text = soup.get_text()
+	return parsed_text
+
+
+
+#--- metrics -----------
+# TODO: Need ideas for more metrics - ask John
+# 
+# extract topics
 #**** extract topics
-	# extract noun_phrases
-	print('Noun phrases: {}'.format(', '.join(blob.noun_phrases)))
-	# extract polarity
-	print('Polarity: {}'.format(blob.sentiment.polarity))
-	# extract named entities
+# extract noun_phrases
+def get_top_n_np(np_list, n=10):
+	# count up NPs and print most common
+	top_n_np = Counter(np_list).most_common(n)
+	intr = list(top_n_np.items())
+	print('Noun phrases: {}'.format(str(intr)))
+
+# extract polarity
+def get_polarity(blob):
+	try:
+		print('Polarity: {}'.format(blob.sentiment.polarity))
+	except:
+		raise 'polarity issue'
+
+# metrics
+def text_process(parsed_text):
+	try:
+		parsed_text
+	except NameError:
+		print('no parsed_text')
+	try:
+		#print(parsed_text)
+		blob = TextBlob(parsed_text)
+		get_top_n_np(blob.noun_phrases)
+	except:
+		raise 'textblob issue'
+	# metrics
+	#get_polarity(blob)
+
+# extract named entities
 #**** extract named entities
+
+
+# function: search -> process -> metrics
+def search_to_metrics(query):
+	# format query
+	try:
+		formatted_search_string = query_format(query)
+	except:
+		raise 'query issue'
+	# search
+	try:
+		html_dump = execute_request(formatted_search_string)
+	except: 'execution issue'
+	# parse
+	try:
+		parsed_text = html_parser(html_dump)
+	except:
+		raise 'parsing issue'
+	try:
+		text_process(parsed_text)
+	except:
+		raise 'failed to process'
 	
-	
+
+
+
+if __name__ == '__main__':
+	search_to_metrics('cat sitting')
+
+
+'''
 
 returns results_object
 
@@ -181,3 +245,6 @@ generate list of named entities
 
 John, Can you help me w/ metrics to gather? I'm a bit clueless on what 
 we should be collecting -- 
+
+
+'''
