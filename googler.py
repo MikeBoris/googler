@@ -1,4 +1,160 @@
+
+from collections import Counter
+import sys
+import requests
+from requests.exceptions import ConnectionError
+import pandas as pd
+from bs4 import BeautifulSoup
+from textblob import TextBlob
+
+
+#
+#--- google search ----------------------
+#
+
+def query_format(query):
+    """
+    query formatting
+    :param: query (str)
+    :returns: formatted_search_string (str)
+    """
+    split_q = query.split(' ')
+    formatted_query = '+'.join(split_q) # formatted_query = cat+sitting
+    search_string = 'https://www.google.com/search?q={}'
+    formatted_search_string = search_string.format(formatted_query)
+    return formatted_search_string
+
+def execute_request(formatted_search_string):
+    """
+    Given search string, execute search
+    :param: formatted_search_string (str)
+    :return: html_dump (str)
+    """
+    try:
+        results_thing = requests.get(formatted_search_string)
+        html_dump = results_thing.text
+        return html_dump
+    except ConnectionError:
+        print('Connection timed out :(')
+    except:
+        print("Unexpected error:", sys.exc_info()[0])
+        raise
+
+
+def html_parser(html_dump, parser='lxml'):
+    """
+    clean_text <- html_parser(html_dump)
+        try another parser? or api search?
+    :param: html_dump (str), parser ('lxml',
+    'html5lib', 'html.parser')
+    :returns: clean_text (str)
+    """
+    soup = BeautifulSoup(html_dump, parser)
+    for s in soup(['script', 'style']):
+        s.decompose()
+    clean_text = ' '.join(soup.stripped_strings)
+    return clean_text
+
+
+
+#--- metrics -----------
+
+def get_topics(blob):
+    """
+    extract topics
+    :param:
+    :returns:
+    """
+    pass
+
+
+def get_polarity(blob):
+    """
+    extract polarity
+    :param: blob (textblob obj)
+    :returns: polarity (float)
+    """
+    try:
+        print('Polarity: {}'.format(blob.sentiment.polarity))
+    except:
+        raise 'polarity issue'
+        
+def get_top_n_np(np_list, n=10):
+    '''
+    count up NPs and print most common    
+    :param: np_list (dict)
+    :returns:
+    '''
+    top_n_np = Counter(np_list).most_common(n)
+    df = pd.DataFrame(top_n_np, columns=['Noun Phrase', 'Frequency'])
+    print('Noun phrases: ')
+    print(df)
+
+# extract named entities
+#**** extract named entities
+# metrics
+
+def get_metrics(clean_text):
+    """
+    Description
+    :param: clean_text (str)
+    :returns: 
+    """
+    try:
+        clean_text
+    except NameError:
+        print('no clean_text')
+    try:
+        #print(clean_text)
+        blob = TextBlob(clean_text)
+    except:
+        raise 'textblob issue'
+    try:
+        # metrics
+        get_polarity(blob)
+        get_top_n_np(blob.noun_phrases)
+    except:
+        raise 'issue w/ polarity or top_np functions'
+
+
+def search_to_metrics(query):
+    """
+    Executes search -> processes results ->  prints metrics
+    :param: query (str)
+    :returns:
+    """
+    # format query
+    try:
+        formatted_search_string = query_format(query)
+    except:
+        raise 'query issue'
+    # search
+    try:
+        html_dump = execute_request(formatted_search_string)
+    except: 'execution issue'
+    # parse
+    try:
+        parsed_text = html_parser(html_dump)
+    except:
+        raise 'parsing issue'
+    try:
+        print('\n')
+        print('Query: {0}'.format(query))
+        print('Searching Google\n')
+        get_metrics(parsed_text)
+    except:
+        raise 'failed to get metrics'
+    
+
+
+if __name__ == '__main__':
+    list_of_queries = ['cat-sitting', 'cat sitting', 'cat sitter', 'cat board']
+    for i in list_of_queries:
+        search_to_metrics(i)
+
 '''
+NOTES
+
 
 
 google search results for:
@@ -65,6 +221,9 @@ https://www.rover.com/cat-sitting/
 Looking for a cat sitter? Book a 5-star cat sitter to feed and play with your cat while you're away or at work.
 ''
 
+
+ENHANCED QUERY
+
 original query (broad term)
 
 get list of all synonymns (narrower terms)
@@ -93,189 +252,6 @@ takes query
 executes enhanced_query
     instance dependent
     eg
-'''
-from collections import Counter
-import sys
-import requests
-from requests.exceptions import ConnectionError
-import pandas as pd
-from bs4 import BeautifulSoup
-from textblob import TextBlob
-
-
-# TODO
-#
-# IDEAL DEF
-def beautiful(x):
-    """
-    Description
-    :param: x (type)
-    :returns: y (type)
-    """
-    return y
-
-
-#
-# google search
-# ----------------------
-# query formatting
-def query_format(query):
-    """
-    query formatting
-    :param: query (str)
-    :returns: formatted_search_string (str)
-    """
-    split_q = query.split(' ')
-    formatted_query = '+'.join(split_q) # formatted_query = cat+sitting
-    search_string = 'https://www.google.com/search?q={}'
-    formatted_search_string = search_string.format(formatted_query)
-    return formatted_search_string
-
-def execute_request(formatted_search_string):
-    """
-    Given search string, execute search
-    :param: formatted_search_string (str)
-    :return: html_dump (str)
-    """
-    try:
-        results_thing = requests.get(formatted_search_string)
-        html_dump = results_thing.text
-        return html_dump
-    except ConnectionError:
-        print('Connection timed out :(')
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
-        raise
-
-
-# clean_text <- html_parser(html_dump)
-# try another parser? or api search?
-def html_parser(html_dump, parser='lxml'):
-    """
-    Description
-    :param: html_dump (str), parser ('lxml',
-    'html5lib', 'html.parser')
-    :returns: clean_text (str)
-    """
-    soup = BeautifulSoup(html_dump, parser)
-    for s in soup(['script', 'style']):
-        s.decompose()
-    clean_text = ' '.join(soup.stripped_strings)
-    return clean_text
-
-
-
-#--- metrics -----------
-# TODO: Need ideas for more metrics - ask John
-# 
-# extract topics
-#**** extract topics
-
-'''
- -> html.parser(takes html_dump, returns parsed_text) -> textblob -> np, polarity
-'''
-
-# extract polarity
-def get_polarity(blob):
-    """
-    Description
-    :param: x (type)
-    :returns: y (type)
-    """
-    try:
-        print('Polarity: {}'.format(blob.sentiment.polarity))
-    except:
-        raise 'polarity issue'
-        
-# extract noun_phrases
-def get_top_n_np(np_list, n=10):
-    '''
-    count up NPs and print most common
-    
-    :param: np_list (dict)
-    :returns: top_n_np (list)
-    '''
-    top_n_np = Counter(np_list).most_common(n)
-    df = pd.DataFrame(top_n_np, columns=['Noun Phrase', 'Frequency'])
-    print('Noun phrases: ')
-    print(df)
-
-# extract named entities
-#**** extract named entities
-# metrics
-def text_process(clean_text):
-    """
-    Description
-    :param: x (type)
-    :returns: y (type)
-    """
-    try:
-        clean_text
-    except NameError:
-        print('no clean_text')
-    try:
-        #print(clean_text)
-        blob = TextBlob(clean_text)
-    except:
-        raise 'textblob issue'
-    try:
-        # metrics
-        get_polarity(blob)
-        get_top_n_np(blob.noun_phrases)
-    except:
-        raise 'issue w/ polarity or top_np functions'
-
-
-
-
-# function: search -> process -> metrics
-def search_to_metrics(query):
-    """
-    Description
-    :param: x (type)
-    :returns: y (type)
-    """
-    # format query
-    try:
-        formatted_search_string = query_format(query)
-    except:
-        raise 'query issue'
-    # search
-    try:
-        html_dump = execute_request(formatted_search_string)
-    except: 'execution issue'
-    # parse
-    try:
-        parsed_text = html_parser(html_dump)
-    except:
-        raise 'parsing issue'
-    try:
-        print('\n')
-        print('Query: {0}'.format(query))
-        print('Searching Google\n')
-        text_process(parsed_text)
-    except:
-        raise 'failed to process'
-    
-
-
-if __name__ == '__main__':
-    list_of_queries = ['cat-sitting', 'cat sitting', 'cat sitter', 'cat board']
-    for i in list_of_queries:
-        search_to_metrics(i)
-
-
-
-
-
-
-
-'''
-
-returns results_object
-
-TODO:
-generates enhanced_query
 
 parse/preprocess results
 preprocessing_class
