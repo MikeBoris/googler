@@ -144,7 +144,13 @@ def search_to_metrics(query):
         get_metrics(parsed_text)
     except:
         raise 'failed to get metrics'
-    
+
+#
+#-------- twitter ----------------------
+#
+
+
+
 
 
 if __name__ == '__main__':

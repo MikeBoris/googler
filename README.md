@@ -11,11 +11,12 @@ python googler.py
 ```
 
 # TODO
-- generate synonymns -> enhanced_query
+- generate synonymns -> query expansion
 - Need ideas for more metrics - ask John
-- compare html parsers
-	- lxml
-	- html5lib
-	- etc
+- add another search platform eg twitter
+- revisit html parser
+	- fine tuning
 - get topics
 - get named entities
+- ?
+- turn data into something useful eg money
