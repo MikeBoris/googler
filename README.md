@@ -13,7 +13,6 @@ python googler.py
 # TODO
 - generate synonymns -> query expansion
 - Need ideas for more metrics - ask John
-- add another search platform eg twitter
 - revisit html parser
 	- fine tuning
 - get topics

@@ -16,8 +16,7 @@
 
 '''
 from collections import Counter
-import re
-from string import punctuation
+import re, string
 from sys import argv
 
 from twython import Twython
@@ -99,7 +98,7 @@ def remove_invalid_chr(list_of_tokens):
 	given tokenized tweet as list of strings
 	return list w/ invalid strings removed
 	"""
-	invalid_chars = set(punctuation)
+	invalid_chars = set(string.punctuation)
 	for token in list_of_tokens:
 		# if there's a special char in token
 		if any(char in invalid_chars for char in token):
@@ -147,17 +146,47 @@ def bulk_tweet_collection(results):
 	list_of_lists = []
 	for tweet in results['statuses']:
 		list_of_lists.append(list((tweet['id'], tweet['user']['screen_name'], 
-			tweet['created_at'], tweet['text'], tweet['favorited'],
+			tweet['created_at'], clean_words(tweet['text']), tweet['favorited'],
 			tweet['retweeted'])))
 	return list_of_lists
 
+def bulk_tweet_text(results):
+	"""
+	Converts query results object (tweets) into clean tokens
+	:param results: parsed json results returned
+		by query to twitter api
+	:return: list of clean tokens
+	"""
+	for tweet in results['statuses']:
+		print(clean_words(tweet['text']))
+
+
+# dirty text to list of lemmas
+def clean_words(tweet_str):
+	"""
+	Takes tweet text, gives list of clean tokens
+	:param: tweet_str (str)
+	:return: clean (list)
+	"""
+	#tokenize tweet_str
+	# tokenize(tweet_str)
+	tokens = re.split('[^a-zA-Z]', tweet_str)
+	new_tokens = [token for token in tokens if len(token) > 1]
+	new_tokens = [token.lower() for token in new_tokens]
+	return ' '.join(new_tokens)
+
 
 # sentiment stats
-
-if __name__ == '__main__':
-	print('Searching for tweets about: {0}'.format(argv[1]))
-	data = execute_search(API_KEY, API_SECRET, argv[1], num_results=argv[2])
+def gimme_tweets(key, secret, query, num_results):
+	data = execute_search(key, secret, query, num_results)
+	print_tweets(data)
 	tweets = bulk_tweet_collection(data)
 	for t in tweets:
 		print(t)
-	print_tweets(data)
+	bulk_tweet_text(data)
+	
+
+if __name__ == '__main__':
+	print('Searching for tweets about: {0}'.format(argv[1]))
+
+	gimme_tweets(API_KEY, API_SECRET, argv[1], num_results=argv[2])
