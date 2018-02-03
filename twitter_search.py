@@ -1,18 +1,19 @@
 '''
-	search.py
 
 	Given user search query, retrieves relevant twitter data
 	(Ideally) returns descriptive stats for data retrieved
 	e.g.
 
-	>>> python search.py 'Richard Branson'
-	
-	Searching twitter for mentions of Richard Branson
-	
-	Results:		Tweets returned: 4312
-					Positive: 1234
-					Negative: 2120
-					Neutral: 903
+	$ python twitter_search.py 'dogs' 100
+
+	Collecting 100 tweets about: dogs
+	Polarity is: 0.4
+	                                Noun Phrase  Frequency   Word  Frequency
+	0                                hurts dogs         30   dogs        120
+	1                               buying dogs         13  https         87
+	2                                pet stores         12     rt         86
+	3                                need homes         12     co         73
+	4                             detect things         10    are         38
 
 '''
 from collections import Counter
@@ -183,7 +184,7 @@ def get_tweet_stats(clean):
 	"""
 	block = ' '.join(clean)
 	blob = TextBlob(block)
-	return (blob.words, blob.noun_phrases, blob.sentiment.polarity)
+	return (blob.words, blob.noun_phrases, round(blob.sentiment.polarity, 2))
 
 
 def get_top_n_np(np_list, n=10):
@@ -199,11 +200,16 @@ def get_top_n_np(np_list, n=10):
 
 def most_common(words, n=10):
 	"""
-	Get most frequent token in document
+	Get most frequent tokens in document
 	"""
 	top_n_words = Counter(words).most_common(n)
 	df = pd.DataFrame(top_n_words, columns=['Word', 'Frequency'])
 	return df
+
+# combine dfs
+def concat_df(df1, df2):
+	
+	return pd.concat([df1, df2], axis=1, join_axes=[df1.index])
 # sentiment stats
 
 def gimme_tweets(key, secret, query, num_results):
@@ -216,51 +222,15 @@ def gimme_tweets(key, secret, query, num_results):
 	'''
 	#print(bulk_tweet_text(data))
 	clean_text = bulk_tweet_text(data)
-	bloc, NPs, polar = get_tweet_stats(clean_text)
+	words, NPs, polar = get_tweet_stats(clean_text)
 	print('Polarity is: {}'.format(str(polar)))
-	print('{}'.format(get_top_n_np(NPs)))
-	print('{}'.format(str(most_common(list(bloc)))))
+	np_df = get_top_n_np(NPs)
+	w_df = most_common(list(words))
+	print(concat_df(np_df, w_df))
 	#get_top_n_np(NPs)
 	
 
 if __name__ == '__main__':
-	print('Searching for tweets about: {0}'.format(argv[1]))
+	print('Collecting {1} tweets about: {0}'.format(argv[1], argv[2]))
 
 	gimme_tweets(API_KEY, API_SECRET, argv[1], num_results=argv[2])
-
-
-'''
-okay so my query returns tweet text
-
-noun phrase, polarity, 
-
-
-
-first:
-RT @StephenCluskey “ It ’ s never as bad as you think it is There ’ s always hope and opportunities ” : https://t.c
-o/b2ydOCMt2 …
-
-second:
-rt richardbranson stephencluskey it never as bad as you think it is there always hope and opportunities https co yd
-ocmt
-
-
- you think richard branson and virgin care have no place in our national health service ournhs', False, False]
-if you want to be millionaire start with billion dollars and launch new airline richard branson quote
-rt pandoraskids sir richard branson quote image https co lqouqhbirc https co rpau xjqlu https co uahqimouor
-rt richardbranson predicted all cars will be electric in years here another step forward to achieving that https co
- vgotodr
-elon musk and sir richard branson hangout on air https co mox iwqq via youtube https co rpau xjqlu
-adhdfoundation adhd for life adhd dundee adhdwiseuk adhdwarrington adultadhdni addni adhdnorfolk https co klvxybixi
-
-business has to be involving it has to be fun and it has to exercise your creative instincts richard branson wisewo
-rds business
-you don learn to walk by following rules you learn by doing and by falling over richard branson
-rt actioncomplete opportunities are like buses there always another one coming richard branson inspiration quotes h
-ttps co koz
-rt richardbranson stephencluskey it never as bad as you think it is there always hope and opportunities https co yd
-ocmt
-rt rachael swindon please retweet this if you think richard branson and virgin care have no place in our national h
-ealth service ournhs
-
-'''
