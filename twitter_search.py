@@ -1,7 +1,5 @@
-'''
-
-	Given user search query, retrieves relevant twitter data
-	(Ideally) returns descriptive stats for data retrieved
+'''	Given user search query, retrieves relevant twitter data
+	(Ideally) returns descriptive stats on data
 	e.g.
 
 	$ python twitter_search.py 'dogs' 100
@@ -167,6 +165,19 @@ def clean_words(tweet_str):
 	new_tokens = [token.lower() for token in new_tokens]
 	return ' '.join(new_tokens)
 
+def clean_words2(tweet_str):
+	"""
+	Takes tweet text, gives list of clean tokens
+	:param: tweet_str (str)
+	:return: clean (list)
+	"""
+	#tokenize tweet_str
+	# tokenize(tweet_str)
+	tokens = tokenize(tweet_str)
+	new_tokens = [token for token in tokens if len(token) > 1]
+	new_tokens = [token.lower() for token in new_tokens]
+	return ' '.join(new_tokens)
+
 def bulk_tweet_text(results):
 	"""
 	Converts query results object (tweets) into clean tokens
@@ -174,7 +185,7 @@ def bulk_tweet_text(results):
 		by query to twitter api
 	:return: list of clean tokens
 	"""
-	return [clean_words(tweet['text']) for tweet in results['statuses']]
+	return [clean_words2(tweet['text']) for tweet in results['statuses']]
 
 from textblob import TextBlob
 
@@ -212,7 +223,7 @@ def concat_df(df1, df2):
 	return pd.concat([df1, df2], axis=1, join_axes=[df1.index])
 # sentiment stats
 
-def gimme_tweets(key, secret, query, num_results):
+def gimme_tweets(query, num_results, key=API_KEY, secret=API_SECRET):
 	data = execute_search(key, secret, query, num_results)
 	'''
 	print_tweets(data)
@@ -221,6 +232,7 @@ def gimme_tweets(key, secret, query, num_results):
 		print(t)
 	'''
 	#print(bulk_tweet_text(data))
+	print('Collecting {1} tweets about: {0}'.format(query, num_results))
 	clean_text = bulk_tweet_text(data)
 	words, NPs, polar = get_tweet_stats(clean_text)
 	print('Polarity is: {}'.format(str(polar)))
@@ -231,6 +243,6 @@ def gimme_tweets(key, secret, query, num_results):
 	
 
 if __name__ == '__main__':
-	print('Collecting {1} tweets about: {0}'.format(argv[1], argv[2]))
+	
 
-	gimme_tweets(API_KEY, API_SECRET, argv[1], num_results=argv[2])
+	gimme_tweets(argv[1], argv[2])
