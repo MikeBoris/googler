@@ -117,7 +117,7 @@ def get_metrics(clean_text):
         raise 'issue w/ polarity or top_np functions'
 
 
-def search_to_metrics(query):
+def google_search_to_metrics(query):
     """
     Executes search -> processes results ->  prints metrics
     :param: query (str)
@@ -145,18 +145,12 @@ def search_to_metrics(query):
     except:
         raise 'failed to get metrics'
 
-#
-#-------- twitter ----------------------
-#
-
-
-
 
 
 if __name__ == '__main__':
     list_of_queries = ['cat-sitting', 'cat sitting', 'cat sitter', 'cat board']
     for i in list_of_queries:
-        search_to_metrics(i)
+        google_search_to_metrics(i)
 
 '''
 NOTES
