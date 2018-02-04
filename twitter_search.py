@@ -15,7 +15,8 @@
 
 '''
 from collections import Counter
-import re, string
+import re
+import string
 from sys import argv
 
 import pandas as pd
@@ -24,7 +25,7 @@ from twython import Twython
 from textblob import TextBlob
 
 # assumes twitter api key/secret in current directory
-from apiKey import API_KEY, API_SECRET
+from apiKey import TWITTER_API_KEY, TWITTER_API_SECRET
 
 #--- Regex parser -----------------------------------------------------------
 # source: https://marcobonzanini.com/2015/03/09/mining-twitter-data-with-python-part-2/
@@ -223,7 +224,7 @@ def concat_df(df1, df2):
 	return pd.concat([df1, df2], axis=1, join_axes=[df1.index])
 # sentiment stats
 
-def gimme_tweets(query, num_results, key=API_KEY, secret=API_SECRET):
+def gimme_tweets(query, num_results, key=TWITTER_API_KEY, secret=TWITTER_API_SECRET):
 	data = execute_search(key, secret, query, num_results)
 	'''
 	print_tweets(data)

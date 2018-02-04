@@ -13,6 +13,5 @@ def search_all_channels(arg1, arg2):
 	google_search_to_metrics(arg1)
 	# 
 
-
 if __name__ == '__main__':
 	search_all_channels(argv[1], argv[2])

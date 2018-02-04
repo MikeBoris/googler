@@ -29,4 +29,6 @@ apiKey.py
 apiKey.pyc
 apiKey.cpython-36.pyc
 
+yelp_config.json
+
 Twitter.db
