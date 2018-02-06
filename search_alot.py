@@ -5,12 +5,49 @@ from sys import argv
 from googler import google_search_to_metrics
 from twitter_search import gimme_tweets
 
-#--- channels --------------------
-def search_all_channels(arg1, arg2):
-	# twitter
-	gimme_tweets(arg1, arg2)
-	# google
-	google_search_to_metrics(arg1)
+def search_all_channels(query, numberOfResults):
+	"""
+	query
+	numberOfResults: only for twitter
+
+
+	Channels:
+		--social media
+		Twitter
+
+		--search engines
+		Google
+
+		--etc
+
+	TODO:
+		Yahoo
+		Bing
+
+		Reddit
+
+		Wikipedia
+
+
+		Facebook
+		Instagram
+		Amazon
+		
+		Blogger
+		YouTube
+		Foursquare
+		Flickr
+		Imgur
+		Indeed
+		LinkedIn
+		Pinterest
+		Technorati
+		Tumblr
+		Vimeo
+
+	"""
+	gimme_tweets(query, numberOfResults)
+	google_search_to_metrics(query)
 	# 
 
 if __name__ == '__main__':
